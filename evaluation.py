@@ -99,8 +99,8 @@ def evaluation_main():
     device = accelerator.device
 
     logger.info('Loading causal model...')
-    model = transformers.InstructBlipForConditionalGeneration.from_pretrained(
-        "/mnt/maclabcv2/rubickjiang/proj_storage/huggingface_models/instructblip-vicuna-13b", 
+    model = transformers.LlavaForConditionalGeneration.from_pretrained(
+        model_args.model_name_or_path, 
         torch_dtype=torch.bfloat16, 
         device_map="balanced_low_0"
     )
@@ -121,8 +121,8 @@ def evaluation_main():
     # test_dataset = TEST_DATA[data_args.dataset_name]()
     # answers = test_dataset["ground"]
     # prompts = test_dataset["inputs"]
-    processor = transformers.InstructBlipProcessor.from_pretrained("/mnt/maclabcv2/rubickjiang/proj_storage/huggingface_models/instructblip-vicuna-13b", padding_side="left", use_fast=False)
-    dataset = load_dataset("parquet", data_files="/mnt/maclabcv2/rubickjiang/public_dataset/bench_final.parquet")
+    processor = transformers.AutoProcessor.from_pretrained(model_args.model_name_or_path, padding_side="left", use_fast=False)
+    dataset = load_dataset("parquet", data_files=data_args.data_path)
     prompts = []
     for data in dataset["train"]:
         question = data["question"]
@@ -139,11 +139,11 @@ def evaluation_main():
                     ],
             },
         ]
-        # text = processor.apply_chat_template(conversation, add_generation_prompt=True)
+        text = processor.apply_chat_template(conversation, add_generation_prompt=True)
         # text = input
         prompts.append({
-            "text": input.replace("<image>", ""),
-            "image": data["image"].convert("RGB"),
+            "text": text,
+            "image": data["image"],
             "gt": gt
         })
     print("copying......")
@@ -201,7 +201,7 @@ def evaluation_main():
             total_results += r["outputs"]
         total_results = [txt for txt in total_results]
         # dump results
-        with jsonlines.open("/mnt/maclabcv2/rubickjiang/codes/vllm_inference/output_insBLIP-T5-xxl.jsonl", "w") as writer:
+        with jsonlines.open(training_args.output_dir, "w") as writer:
             for i in range(len(groundtruth)):
                 writer.write({
                     "ground": groundtruth[i],

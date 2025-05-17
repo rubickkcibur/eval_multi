@@ -10,14 +10,9 @@
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 export MACLAB_NAS_NAME="maclabcv2"
 
-MODEL_PATH="/mnt/maclabcv2/rubickjiang/proj_storage/unlearning/MT_models/wmt_zh/checkpoint-313"
-DATA_PATH=""
-DATASET_NAME="qasc"
-SPLIT=0
-VALID_DATA_PATH=""
-OUTPUT_DIR=""
-TEMP_PATH=""
-PEFT_MODEL=""
+MODEL_PATH="/mnt/maclabcv2/rubickjiang/proj_storage/huggingface_models/llava-1.5-7b-hf"
+DATA_PATH="/mnt/maclabcv2/rubickjiang/public_dataset/bench_final.parquet"
+OUTPUT_DIR="/mnt/maclabcv2/rubickjiang/codes/vllm_inference/output_llava-1.5-7b.jsonl"
 export TORCH_USE_CUDA_DSA=1
 # export CUDA_VISIBLE_DEVICES=0
 # what matters: model_name_or_path, peft_model_path, eval_data_path, per_device_eval_batch_size(fixed)
@@ -29,10 +24,10 @@ accelerate launch --config_file "/mnt/${MACLAB_NAS_NAME}/rubickjiang/codes/accel
     --model_name_or_path "$MODEL_PATH" \
     --mode "base" \
     --peft_model_path "" \
-    --dataset_name "${TEST_DATA_NAMES[i]}" \
-    --data_path "" \
+    --dataset_name "" \
+    --data_path "$DATA_PATH" \
     --valid_data_path "" \
-    --eval_data_path "${TEST_DATA_NAMES[i]}:test" \
+    --eval_data_path "" \
     --bf16 True \
     --output_dir "$OUTPUT_DIR" \
     --num_train_epochs 1 \
